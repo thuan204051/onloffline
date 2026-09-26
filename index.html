@@ -235,7 +235,15 @@ details[open] summary{margin-bottom:9px}
 .passage-body td,.passage-body th{border:1px solid var(--line2);padding:4px 8px}
 .passage-ref{color:var(--txt3);margin-bottom:6px}
 .passage-ref a{font-weight:700}
-@media print{.passage{break-inside:avoid;background:#fff}}
+@media print{
+  /* ngữ liệu dùng chung: in ra cả khi khối bị thu gọn */
+  .passage{break-inside:avoid;background:#fff;border-color:#cbd5e1}
+  details{break-inside:avoid}
+  details:not([open])>::details-content,
+  details:not([open])>div,
+  details:not([open])>p{content-visibility:visible!important;display:block!important}
+  summary{list-style:none}
+}
 
 /* ---------- công thức toán (MathJax SVG) ---------- */
 mjx-container{font-size:1.02em}
@@ -245,6 +253,37 @@ mjx-container svg{vertical-align:middle;max-width:100%}
   mjx-container{break-inside:avoid}
   mjx-container svg{max-width:100%!important}
   .q mjx-container{page-break-inside:avoid}
+}
+
+
+/* ================= CHẾ ĐỘ IN / XUẤT PDF: mực đen trên nền trắng =================
+   Vì sao cần: MathJax vẽ công thức bằng fill="currentColor" (nét mảnh) nên khi in ở theme
+   tối, công thức ăn theo màu chữ sáng -> in ra giấy trắng thì mờ tịt. Khối này ép cả chữ
+   lẫn công thức sang mực đen tuyệt đối, và cho phép in nền nhạt (ô đáp án, thẻ). */
+@media print{
+  html,html[data-theme="dark"],:root{
+    --bg:#fff; --card:#fff; --card2:#fff; --line:#c8d0dd; --line2:#94a3b8;
+    --txt:#000; --txt2:#1f2937; --txt3:#374151;
+    --pri:#000; --pri2:#000; --pri-soft:#eef2f7;
+    --ok:#14532d; --ok-soft:#eafaf0; --err:#7f1d1d; --err-soft:#fdecec;
+    --warn:#713f12; --warn-soft:#fff7e6; --shadow:none;
+  }
+  body{
+    background:#fff!important; color:#000!important;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  *{text-shadow:none!important}
+  .q,.card,.opt,.passage,.explain,.tfrow{border-color:#c8d0dd!important;box-shadow:none!important}
+  .opt input{display:none}
+  /* công thức: mực đen tuyệt đối (kể cả khi SVG tự khai báo currentColor) */
+  mjx-container,mjx-container *{color:#000!important}
+  mjx-container svg g[fill="currentColor"]{fill:#000!important;stroke:#000!important}
+  mjx-container svg g[stroke="currentColor"]{stroke:#000!important}
+  mjx-container svg{max-width:100%!important;height:auto!important}
+  mjx-container{break-inside:avoid;page-break-inside:avoid;font-size:1.06em}
+  mjx-container[display="true"]{overflow:visible!important}      /* công thức dài không bị cắt khi in */
+  /* nhãn/điểm số in được dù nền nhạt */
+  .q-num,.badge,.lt{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
 </head>
@@ -260,7 +299,7 @@ mjx-container svg{vertical-align:middle;max-width:100%}
         <path d="M13.6 9.6h3.6M7 15h4.4M13.6 15h3.6" stroke="var(--pri)" stroke-width="1.7" stroke-linecap="round"/>
       </svg>
       <span>Onluyen Offline Player<br><small>giao diện làm bài chạy không cần mạng</small></span>
-      <span class="badge" id="ver-badge" title="Phiên bản đang chạy — đối chiếu khi báo lỗi">v20260926.0334</span>
+      <span class="badge" id="ver-badge" title="Phiên bản đang chạy — đối chiếu khi báo lỗi">v20260926.0406</span>
     </div>
     <div class="tabs">
       <button class="tab on" data-view="view-import">Nhập đề</button>
@@ -537,7 +576,7 @@ mjx-container svg{vertical-align:middle;max-width:100%}
   <div class="footer">
     Chạy offline 100% · không có mã theo dõi, không gọi mạng · bài làm lưu trong localStorage của chính trình duyệt bạn.<br>
     Phím tắt, chấm điểm, in đề — mở file này bằng Chrome/Edge/Firefox, không cần cài gì thêm.<br>
-    Phiên bản: <b id="ver-foot">v20260926.0334</b> — khi báo lỗi, chụp kèm số này để biết bạn đang chạy bản nào.<br>
+    Phiên bản: <b id="ver-foot">v20260926.0406</b> — khi báo lỗi, chụp kèm số này để biết bạn đang chạy bản nào.<br>
     Nút gọn khi gặp trục trặc: <a href="#" id="lnk-quick-diag">chạy chẩn đoán nhanh &amp; tải báo cáo</a>
   </div>
 </div>
@@ -3274,7 +3313,7 @@ mjx-container svg{vertical-align:middle;max-width:100%}
     del: function (k) { try { localStorage.removeItem(k); } catch (e) { store.ok = false; } }
   };
 
-  var BUILD = 'v20260926.0334';
+  var BUILD = 'v20260926.0406';
 
   var APP = {
     rawText: '',        // dữ liệu thô người dùng nạp
@@ -4217,13 +4256,34 @@ mjx-container svg{vertical-align:middle;max-width:100%}
   window.OLApp = APP;   // tay nắm cho kiểm thử / gỡ lỗi
 
 
-  /** In / xuất PDF: render công thức trước rồi mới in (offline vẫn hiện đúng) */
+  /** In / xuất PDF: render công thức trước, mở sẵn ngữ liệu bị thu gọn, ép mực đen rồi mới in.
+   *  Sau khi in xong thì khôi phục nguyên trạng (trạng thái đóng/mở của từng khối). */
   window.OLPrint = function () {
-    var go = function () { try { window.print(); } catch (e) {} };
+    var root = document.documentElement;
+    var reopened = [];
+    var go = function () {
+      try { window.print(); } catch (e) {}
+    };
+    var restore = function () {
+      root.classList.remove('ol-printing');
+      reopened.forEach(function (el) { el.open = false; });
+      reopened = [];
+      window.removeEventListener('afterprint', restore);
+    };
     try {
+      // mở hết khối <details> đang thu gọn để nội dung in ra đầy đủ
+      Array.prototype.forEach.call(document.querySelectorAll('details:not([open])'), function (el) {
+        el.open = true;
+        reopened.push(el);
+      });
+      root.classList.add('ol-printing');
+      window.addEventListener('afterprint', restore);
+      setTimeout(restore, 20000);            // phòng khi trình duyệt không bắn afterprint
       if (window.MathJax && window.MathJax.typesetPromise) {
+        var busy = Array.prototype.slice.call(document.querySelectorAll('.exam, #exam-body, #preview, #keyeditor'))
+          .filter(function (el) { return el && !el.hidden; });
         msg('info', 'Đang render công thức rồi mở hộp thoại in…');
-        window.MathJax.typesetPromise().then(function () { setTimeout(go, 80); }, go);
+        window.MathJax.typesetPromise(busy.length ? busy : undefined).then(function () { setTimeout(go, 80); }, go);
         return;
       }
     } catch (e) {}
@@ -4464,5 +4524,5 @@ window.OLTypeset = function (el) {
   } catch (e) { return null; }
 };
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a40f37896cc95df9',t:'MTc5MDM5MzcwOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
