@@ -201,6 +201,10 @@ details[open] summary{margin-bottom:9px}
 
 @media print{
   .top,.side,.hero,.no-print,.iconbtn,.q-flag{display:none!important}
+  /* Sửa: thanh thông báo nổi (toast, vd "Không lưu được…") KHÔNG được in vào PDF.
+     (Dùng class .toast vì trình duyệt tự thêm khoảng trắng vào thuộc tính style,
+      không thể dò bằng style*="position:fixed") */
+  .notice.toast{display:none!important}
   body{background:#fff}
   .exam{display:block}
   .q{break-inside:avoid;border:0;box-shadow:none;padding:10px 0;border-bottom:1px solid #ddd}
@@ -3091,7 +3095,7 @@ mjx-container svg{vertical-align:middle;max-width:100%}
   function toast(msg, kind) {
     var d = document.createElement('div');
     d.textContent = msg;
-    d.className = 'notice ' + (kind || 'info');
+    d.className = 'notice toast ' + (kind || 'info');
     d.style.cssText = 'position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:99;box-shadow:var(--shadow);max-width:90vw';
     document.body.appendChild(d);
     setTimeout(function () { d.remove(); }, 3800);
@@ -5028,5 +5032,5 @@ window.OLTypeset = function (el) {
   } catch (e) { return null; }
 };
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a41105627f7020f5',t:'MTc5MDQxMjYyNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a41105627f7020f5',t:'MTc5MDQxMjYyNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a45c10795d831787',t:'MTc5MTE5OTUxMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
